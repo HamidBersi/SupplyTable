@@ -1,0 +1,17 @@
+[
+  {
+    "id": "terreazur",
+    "name": "TerreAzur (Pomona) – Alsace",
+    "phone": "0388276350",
+    "orderEmail": "",
+    "address": "M.I.N Cronenbourg, 67087 Strasbourg",
+    "freeDeliveryMinHt": 60
+  },
+  {
+    "id": "la-cremiere",
+    "name": "Frobeurest La Crémière",
+    "phone": "0388104670",
+    "orderEmail": "",
+    "address": "5 rue du Nouvel Abattoir, 67037 Strasbourg Cedex 2"
+  }
+]
