@@ -8,15 +8,25 @@ export type Supplier = {
   freeDeliveryMinHt?: number;
 };
 
-/** Produit saisi à la main (nom seul), stocké en local par fournisseur. */
-export type ManualProduct = {
+/** Données saisies pour un produit hors catalogue. */
+export type ManualProductInput = {
+  name: string;
+  category: string;
+  location: string;
+  unit: string;
+  /** Prix unitaire HT — optionnel. */
+  unitPrice?: number;
+};
+
+/** Produit saisi à la main, stocké en local par fournisseur. */
+export type ManualProduct = ManualProductInput & {
   id: string;
   supplierId: string;
-  name: string;
 };
 
 export type ManualBySupplier = Record<string, ManualProduct[]>;
 
+/** Catégorie métier (voir `lib/product-categories.ts`). Les ajouts manuels utilisent encore une chaîne libre. */
 export type Product = {
   id: string;
   supplierId: string;

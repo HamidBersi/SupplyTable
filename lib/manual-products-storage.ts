@@ -1,4 +1,4 @@
-import type { ManualBySupplier, ManualProduct } from "@/types/supply";
+import type { ManualBySupplier, ManualProduct, ManualProductInput } from "@/types/supply";
 
 const STORAGE_KEY = "supply-table-manual-products-v1";
 
@@ -22,16 +22,32 @@ export function saveManualBySupplier(next: ManualBySupplier): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
 }
 
-export function addManualProduct(supplierId: string, name: string): ManualProduct {
-  const trimmed = name.trim();
-  if (!trimmed) {
-    throw new Error("Nom vide");
-  }
+export function addManualProduct(
+  supplierId: string,
+  input: ManualProductInput,
+): ManualProduct {
+  const name = input.name.trim();
+  if (!name) throw new Error("Nom vide");
+
+  const unitPrice =
+    input.unitPrice !== undefined &&
+    input.unitPrice !== null &&
+    String(input.unitPrice).trim() !== ""
+      ? Math.max(0, Number(input.unitPrice))
+      : undefined;
+
   const item: ManualProduct = {
     id: `manual-${crypto.randomUUID()}`,
     supplierId,
-    name: trimmed,
+    name,
+    category: input.category.trim(),
+    location: input.location.trim(),
+    unit: input.unit.trim(),
+    ...(unitPrice !== undefined && Number.isFinite(unitPrice)
+      ? { unitPrice }
+      : {}),
   };
+
   const all = loadManualBySupplier();
   const list = all[supplierId] ?? [];
   all[supplierId] = [...list, item];

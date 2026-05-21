@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { ManualBySupplier, OrderLine, Product, Supplier } from "@/types/supply";
+import type {
+  ManualBySupplier,
+  ManualProductInput,
+  OrderLine,
+  Product,
+  Supplier,
+} from "@/types/supply";
 import {
   addManualProduct,
   loadManualBySupplier,
@@ -9,6 +15,8 @@ import {
 } from "@/lib/manual-products-storage";
 import { manualProductToRow } from "@/lib/manual-to-product";
 import { STORAGE_LOCATIONS } from "@/lib/locations";
+import { PRODUCT_CATEGORIES } from "@/lib/product-categories";
+import { productMatchesSearch } from "@/lib/product-search";
 import { FilterBar } from "./FilterBar";
 import { ProductTable } from "./ProductTable";
 import { OrderDock } from "./OrderDock";
@@ -21,6 +29,7 @@ type Props = {
 };
 
 export function SupplyCatalog({ suppliers, products }: Props) {
+  const [searchQuery, setSearchQuery] = useState("");
   const [supplierId, setSupplierId] = useState<string>("all");
   const [category, setCategory] = useState<string>("all");
   const [location, setLocation] = useState<string>("all");
@@ -46,24 +55,20 @@ export function SupplyCatalog({ suppliers, products }: Props) {
   }, [products, supplierId, manualBySupplier]);
 
   const categoryOptions = useMemo(() => {
-    const s = new Set(scopedProducts.map((p) => p.category));
-    return [...s].sort((a, b) => a.localeCompare(b, "fr"));
+    const present = new Set(scopedProducts.map((p) => p.category));
+    const canon = new Set<string>([...PRODUCT_CATEGORIES]);
+    const ordered = PRODUCT_CATEGORIES.filter((c) => present.has(c));
+    const extra = [...present]
+      .filter((c) => !canon.has(c))
+      .sort((a, b) => a.localeCompare(b, "fr"));
+    return [...ordered, ...extra];
   }, [scopedProducts]);
 
   /** Liste fixe d’emplacements (cohérente avec `data/products.json`). */
   const locationOptions = useMemo(() => [...STORAGE_LOCATIONS], []);
 
-  const filteredProducts = useMemo(() => {
-    return scopedProducts.filter((p) => {
-      if (category !== "all" && p.category !== category) return false;
-      if (location !== "all" && p.location !== location) return false;
-      if (selectionMode === "selected") {
-        const qty = quantities[p.id] ?? 0;
-        if (qty <= 0) return false;
-      }
-      return true;
-    });
-  }, [scopedProducts, category, location, selectionMode, quantities]);
+  const sameStorageLocation = (a: string, b: string) =>
+    a.normalize("NFC") === b.normalize("NFC");
 
   const supplierMap = useMemo(() => {
     const m = new Map<string, Supplier>();
@@ -73,6 +78,42 @@ export function SupplyCatalog({ suppliers, products }: Props) {
 
   const activeSupplier =
     supplierId !== "all" ? supplierMap.get(supplierId) : undefined;
+
+  const filteredProducts = useMemo(() => {
+    return scopedProducts.filter((p) => {
+      if (category !== "all" && p.category !== category) return false;
+      if (
+        location !== "all" &&
+        !sameStorageLocation(p.location, location)
+      ) {
+        return false;
+      }
+      if (selectionMode === "selected") {
+        const qty = quantities[p.id] ?? 0;
+        if (qty <= 0) return false;
+      }
+      if (
+        !productMatchesSearch(p, searchQuery, {
+          supplierName:
+            supplierId === "all"
+              ? supplierMap.get(p.supplierId)?.name
+              : undefined,
+        })
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [
+    scopedProducts,
+    category,
+    location,
+    selectionMode,
+    quantities,
+    searchQuery,
+    supplierMap,
+    supplierId,
+  ]);
 
   /** Catalogue + lignes manuelles pour le fournisseur actif (commande / total). */
   const rowsForActiveSupplier = useMemo((): Product[] => {
@@ -97,7 +138,7 @@ export function SupplyCatalog({ suppliers, products }: Props) {
           name: p.name,
           code: p.isManual ? "—" : p.code,
           qty,
-          unit: p.isManual ? "—" : p.unit,
+          unit: p.unit,
         });
       }
     }
@@ -123,10 +164,10 @@ export function SupplyCatalog({ suppliers, products }: Props) {
     setLocation("all");
   };
 
-  const handleAddManual = (name: string) => {
+  const handleAddManual = (input: ManualProductInput) => {
     if (supplierId === "all") return;
     try {
-      addManualProduct(supplierId, name);
+      addManualProduct(supplierId, input);
       setManualBySupplier(loadManualBySupplier());
     } catch {
       /* noop — validation côté UI */
@@ -152,7 +193,8 @@ export function SupplyCatalog({ suppliers, products }: Props) {
             Catalogue fournisseurs
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-            Filtrez par fournisseur, catégorie et emplacement. Utilisez{" "}
+            Recherchez un produit ; les filtres actifs (fournisseur, catégorie, emplacement)
+            limitent la recherche, sinon tout le catalogue est parcouru. Utilisez{" "}
             <strong className="font-medium text-zinc-700 dark:text-zinc-300">
               Sélectionnés uniquement
             </strong>{" "}
@@ -163,6 +205,7 @@ export function SupplyCatalog({ suppliers, products }: Props) {
 
         <div className="mb-6">
           <FilterBar
+            searchValue={searchQuery}
             supplierValue={supplierId}
             categoryValue={category}
             locationValue={location}
@@ -170,6 +213,7 @@ export function SupplyCatalog({ suppliers, products }: Props) {
             supplierOptions={suppliers.map((s) => ({ id: s.id, name: s.name }))}
             categoryOptions={categoryOptions}
             locationOptions={locationOptions}
+            onSearchChange={setSearchQuery}
             onSupplierChange={onSupplierChange}
             onCategoryChange={setCategory}
             onLocationChange={setLocation}

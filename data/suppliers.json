@@ -1,17 +1,50 @@
 [
   {
-    "id": "terreazur",
-    "name": "TerreAzur (Pomona) – Alsace",
-    "phone": "0388276350",
-    "orderEmail": "",
-    "address": "M.I.N Cronenbourg, 67087 Strasbourg",
-    "freeDeliveryMinHt": 60
+    "id": "rega",
+    "name": "Rega",
+    "phone": "0635167541",
+    "orderEmail": "hamidbersi1@gmail.com"
   },
   {
-    "id": "la-cremiere",
-    "name": "Frobeurest La Crémière",
-    "phone": "0388104670",
-    "orderEmail": "",
-    "address": "5 rue du Nouvel Abattoir, 67037 Strasbourg Cedex 2"
+    "id": "vita-impex-boissons",
+    "name": "Vita Impex Boissons",
+    "phone": "",
+    "orderEmail": ""
+  },
+  {
+    "id": "vita-impex-epicerie",
+    "name": "Vita Impex Epicerie",
+    "phone": "",
+    "orderEmail": ""
+  },
+  {
+    "id": "adelya-hygiene",
+    "name": "Adelya Hygiene",
+    "phone": "",
+    "orderEmail": ""
+  },
+  {
+    "id": "froberest",
+    "name": "Froberest",
+    "phone": "",
+    "orderEmail": ""
+  },
+  {
+    "id": "essentiel-iller",
+    "name": "Essentiel Iller",
+    "phone": "",
+    "orderEmail": ""
+  },
+  {
+    "id": "distri-cafe",
+    "name": "Distri Cafe",
+    "phone": "",
+    "orderEmail": ""
+  },
+  {
+    "id": "fruits-et-legumes-pomona-et-poi",
+    "name": "Fruits Et Legumes Pomona Et Poi",
+    "phone": "",
+    "orderEmail": ""
   }
 ]

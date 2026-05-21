@@ -5,6 +5,7 @@ export const STORAGE_LOCATIONS = [
   "Congélateur bas",
   "Congélateur haut",
   "Bar",
+  "Stock A",
   "Nettoyage",
   "Réserve",
 ] as const;

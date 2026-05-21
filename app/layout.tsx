@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { HeaderNav } from "@/app/components/HeaderNav";
+import { Providers } from "@/app/providers";
+import { auth } from "@/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,19 +21,22 @@ export const metadata: Metadata = {
     "Catalogue et commandes pour restaurant : filtres, e-mail et historique local.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   return (
     <html
       lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
-        <HeaderNav />
-        <main className="flex-1">{children}</main>
+        <Providers session={session}>
+          <HeaderNav session={session} />
+          <main className="flex-1">{children}</main>
+        </Providers>
       </body>
     </html>
   );

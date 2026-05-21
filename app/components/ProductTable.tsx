@@ -118,7 +118,7 @@ export function ProductTable({
                     {p.location}
                   </td>
                   <td className="hidden whitespace-nowrap px-4 py-2.5 text-right tabular-nums text-zinc-800 md:table-cell dark:text-zinc-200">
-                    {p.isManual ? (
+                    {p.isManual && p.unitPrice <= 0 ? (
                       <span className="text-zinc-400 dark:text-zinc-500">—</span>
                     ) : (
                       <>
