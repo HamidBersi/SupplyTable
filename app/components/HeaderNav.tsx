@@ -10,7 +10,7 @@ export function HeaderNav({ session }: { session: Session | null }) {
           href="/"
           className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
         >
-          Supply Table
+         Supply Table
         </Link>
         <nav className="flex items-center gap-4 text-sm">
           {session ? (

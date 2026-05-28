@@ -17,6 +17,11 @@ import { manualProductToRow } from "@/lib/manual-to-product";
 import { STORAGE_LOCATIONS } from "@/lib/locations";
 import { PRODUCT_CATEGORIES } from "@/lib/product-categories";
 import { productMatchesSearch } from "@/lib/product-search";
+import {
+  orderUnitLabel,
+  resolveOrderUnitId,
+} from "@/lib/order-unit-options";
+import { loadOrderUnitDefaults, saveOrderUnitDefault } from "@/lib/order-unit-defaults-storage";
 import { FilterBar } from "./FilterBar";
 import { ProductTable } from "./ProductTable";
 import { OrderDock } from "./OrderDock";
@@ -37,6 +42,14 @@ export function SupplyCatalog({ suppliers, products }: Props) {
     "all",
   );
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [orderUnits, setOrderUnits] = useState<Record<string, string>>({});
+  const [unitDefaults, setUnitDefaults] = useState<Record<string, string>>(
+    {},
+  );
+
+  useEffect(() => {
+    setUnitDefaults(loadOrderUnitDefaults());
+  }, []);
   const [emailOpen, setEmailOpen] = useState(false);
   const [manualBySupplier, setManualBySupplier] =
     useState<ManualBySupplier>({});
@@ -138,12 +151,14 @@ export function SupplyCatalog({ suppliers, products }: Props) {
           name: p.name,
           code: p.isManual ? "—" : p.code,
           qty,
-          unit: p.unit,
+          unit: orderUnitLabel(
+            resolveOrderUnitId(p, orderUnits, unitDefaults),
+          ),
         });
       }
     }
     return out;
-  }, [activeSupplier, rowsForActiveSupplier, quantities]);
+  }, [activeSupplier, rowsForActiveSupplier, quantities, orderUnits, unitDefaults]);
 
   /** Estimation HT : Σ (qté × PU catalogue). Les PU ne sont pas forcément ceux du jour. */
   const estimatedSubtotalHt = useMemo(() => {
@@ -162,6 +177,7 @@ export function SupplyCatalog({ suppliers, products }: Props) {
     setSupplierId(v);
     setCategory("all");
     setLocation("all");
+    setOrderUnits({});
   };
 
   const handleAddManual = (input: ManualProductInput) => {
@@ -190,16 +206,10 @@ export function SupplyCatalog({ suppliers, products }: Props) {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Catalogue fournisseurs
+            Catalogue des Produits
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-            Recherchez un produit ; les filtres actifs (fournisseur, catégorie, emplacement)
-            limitent la recherche, sinon tout le catalogue est parcouru. Utilisez{" "}
-            <strong className="font-medium text-zinc-700 dark:text-zinc-300">
-              Sélectionnés uniquement
-            </strong>{" "}
-            pour ne voir que les lignes avec une quantité — pratique avant un
-            appel au fournisseur.
+            Filtrez les produits par fournisseur, catégorie ou emplacement. Vous pouvez également rechercher un produit par nom, code ou catégorie.
           </p>
         </div>
 
@@ -224,9 +234,17 @@ export function SupplyCatalog({ suppliers, products }: Props) {
         <ProductTable
           products={filteredProducts}
           quantities={quantities}
+          orderUnits={orderUnits}
+          unitDefaults={unitDefaults}
           onQtyChange={(id, qty) =>
             setQuantities((prev) => ({ ...prev, [id]: qty }))
           }
+          onOrderUnitChange={(id, unitId) =>
+            setOrderUnits((prev) => ({ ...prev, [id]: unitId }))
+          }
+          onSetUnitDefault={(profileKey, unitId) => {
+            setUnitDefaults(saveOrderUnitDefault(profileKey, unitId));
+          }}
           onRemoveManual={
             supplierId !== "all" ? handleRemoveManual : undefined
           }

@@ -31,10 +31,15 @@ export function getAuthConfigStatus() {
   };
 }
 
+/** Secret JWT — obligatoire (voir `.env.local` → `AUTH_SECRET`). */
+const authSecret =
+  process.env.AUTH_SECRET?.trim() || process.env.NEXTAUTH_SECRET?.trim();
+
 /**
  * Auth.js (next-auth v5) : session en cookie httpOnly ; Argon2 importé dynamiquement dans authorize.
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: authSecret,
   trustHost: true,
   pages: { signIn: "/login" },
   session: { strategy: "jwt", maxAge: 60 * 60 * 12 },

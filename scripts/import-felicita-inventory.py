@@ -458,6 +458,34 @@ def resolve_location(
     return best or "Réserve"
 
 
+# Seuils HT livraison offerte (TerreAzur / Pomona : 60 € — voir historique git 4c4a09f).
+DEFAULT_FREE_DELIVERY_MIN_HT: dict[str, float] = {
+    "fruits-et-legumes-pomona-et-poi": 60.0,
+    "terreazur": 60.0,
+}
+
+
+def load_preserved_free_delivery(path: Path) -> dict[str, float]:
+    """supplier id -> seuil HT livraison offerte."""
+    by_id: dict[str, float] = {}
+    if not path.is_file():
+        return by_id
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    for s in raw:
+        if not isinstance(s, dict):
+            continue
+        sid = s.get("id")
+        val = s.get("freeDeliveryMinHt")
+        if (
+            isinstance(sid, str)
+            and isinstance(val, (int, float))
+            and val > 0
+            and float(val) == val
+        ):
+            by_id[sid] = float(val)
+    return by_id
+
+
 def load_preserved_locations(path: Path) -> tuple[dict[str, str], dict[tuple[str, str], str]]:
     """Maps: product id -> location, (supplierId, norm_name) -> location."""
     by_id: dict[str, str] = {}
@@ -510,6 +538,14 @@ def main() -> None:
     preserve_path: Path | None = args.preserve_locations_from
     if preserve_path is None and args.keep_locations:
         preserve_path = args.root / "data" / "products.json"
+    suppliers_path = args.root / "data" / "suppliers.json"
+    preserve_free_delivery = load_preserved_free_delivery(suppliers_path)
+    if preserve_free_delivery:
+        print(
+            f"Preserving free-delivery thresholds from {suppliers_path} "
+            f"({len(preserve_free_delivery)} supplier(s))."
+        )
+
     preserve_by_id: dict[str, str] = {}
     preserve_by_supplier_name: dict[tuple[str, str], str] = {}
     if preserve_path is not None:
@@ -543,14 +579,18 @@ def main() -> None:
         sid = slug(sheet_name)
         block = blocks[si] if si < len(blocks) else None
         use_index = block is not None and len(block) == len(plist)
-        suppliers.append(
-            {
-                "id": sid,
-                "name": sheet_name,
-                "phone": "",
-                "orderEmail": "",
-            }
+        supplier_entry: dict = {
+            "id": sid,
+            "name": sheet_name,
+            "phone": "",
+            "orderEmail": "",
+        }
+        threshold = preserve_free_delivery.get(sid) or DEFAULT_FREE_DELIVERY_MIN_HT.get(
+            sid
         )
+        if threshold is not None:
+            supplier_entry["freeDeliveryMinHt"] = threshold
+        suppliers.append(supplier_entry)
         for idx, row in enumerate(plist):
             name = row["name"]
             key = norm_name(name)

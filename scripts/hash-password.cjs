@@ -4,9 +4,15 @@
  */
 const argon2 = require("argon2");
 
-const pwd = process.argv[2];
+/** Ignore un `--` passé par pnpm/npm (`pnpm run hash-password -- "secret"`). */
+const pwd = process.argv
+  .slice(2)
+  .filter((a) => a !== "--")
+  .join(" ")
+  .trim();
 if (!pwd) {
   console.error('Usage: node scripts/hash-password.cjs "<mot-de-passe>"');
+  console.error('       pnpm run hash-password -- "<mot-de-passe>"');
   process.exit(1);
 }
 
