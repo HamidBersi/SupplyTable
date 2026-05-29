@@ -42,12 +42,7 @@ export function OrderDock({
       <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1 text-sm">
           <p className="font-semibold text-zinc-900 dark:text-zinc-50">
-            Passer la commande — {supplier.name}
-          </p>
-          <p className="text-zinc-500 dark:text-zinc-400">
-            {selectedCount > 0
-              ? `${selectedCount} ligne(s) avec quantité > 0`
-              : "Indiquez des quantités dans le tableau pour préparer l’e-mail."}
+            Passer la commande
           </p>
           {hasThreshold && (
             <div className="mt-2 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
@@ -94,14 +89,14 @@ export function OrderDock({
             href={telHref(supplier.phone)}
             className="inline-flex flex-1 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 sm:flex-none dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
           >
-            Appeler le fournisseur
+            Appeler
           </a>
           <button
             type="button"
             onClick={onOpenEmail}
             className="inline-flex flex-1 items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:flex-none"
           >
-            Commande par e-mail
+            Envoi e-mail
           </button>
         </div>
       </div>
