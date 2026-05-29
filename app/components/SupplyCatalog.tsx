@@ -204,11 +204,11 @@ export function SupplyCatalog({ suppliers, products }: Props) {
   return (
     <div className="pb-28">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <div className="mb-8">
+        <div className="mb-8 text-center md:text-left">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Catalogue des Produits
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 hidden max-w-2xl text-sm text-zinc-600 md:block dark:text-zinc-400">
             Filtrez les produits par fournisseur, catégorie ou emplacement. Vous pouvez également rechercher un produit par nom, code ou catégorie.
           </p>
         </div>
