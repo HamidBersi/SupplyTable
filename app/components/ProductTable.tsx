@@ -151,23 +151,46 @@ export function ProductTable({
                   <td className="px-4 py-2">
                     <div className="ml-auto flex max-w-[9.5rem] items-center justify-end gap-1.5 md:mx-auto">
                       <div className="flex items-center gap-1">
-                        <input
-                          type="number"
-                          min={0}
-                          step={1}
-                          value={qty || ""}
-                          placeholder="0"
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            const n = v === "" ? 0 : Math.max(0, Number(v));
-                            onQtyChange(
-                              p.id,
-                              Number.isFinite(n) ? n : 0,
-                            );
-                          }}
-                          className="h-7 w-11 shrink-0 rounded-lg border border-zinc-200 bg-white px-1 py-0 text-center text-sm tabular-nums shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30 dark:border-zinc-600 dark:bg-zinc-900 sm:w-12"
-                          aria-label={`Quantité pour ${p.name}`}
-                        />
+                        <div className="flex h-7 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/30 dark:border-zinc-600 dark:bg-zinc-900">
+                          <input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={qty || ""}
+                            placeholder="0"
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              const n = v === "" ? 0 : Math.max(0, Number(v));
+                              onQtyChange(
+                                p.id,
+                                Number.isFinite(n) ? n : 0,
+                              );
+                            }}
+                            className="h-full w-9 border-0 bg-transparent px-1 py-0 text-center text-sm tabular-nums outline-none [appearance:textfield] focus:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none sm:w-10"
+                            aria-label={`Quantité pour ${p.name}`}
+                          />
+                          <div className="flex flex-col border-l border-zinc-200 dark:border-zinc-600">
+                            <button
+                              type="button"
+                              className="flex h-[14px] w-5 items-center justify-center bg-zinc-50 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                              onClick={() => onQtyChange(p.id, qty + 1)}
+                              aria-label="Augmenter la quantité"
+                            >
+                              <IconChevronUp className="h-2 w-2" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={qty <= 0}
+                              className="flex h-[14px] w-5 items-center justify-center border-t border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 disabled:cursor-default disabled:opacity-40 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                              onClick={() =>
+                                onQtyChange(p.id, Math.max(0, qty - 1))
+                              }
+                              aria-label="Diminuer la quantité"
+                            >
+                              <IconChevronDown className="h-2 w-2" />
+                            </button>
+                          </div>
+                        </div>
                         <OrderUnitSelect
                           valueId={unitId}
                           abbrev={abbrev}
@@ -178,28 +201,6 @@ export function ProductTable({
                           onChange={(id) => onOrderUnitChange(p.id, id)}
                           onSetDefault={onSetUnitDefault}
                         />
-                      </div>
-                      <div className="flex shrink-0 flex-col gap-1">
-                        <button
-                          type="button"
-                          className="flex h-6 w-6 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                          onClick={() => onQtyChange(p.id, qty + 1)}
-                          aria-label="Augmenter la quantité"
-                        >
-                          <IconChevronUp className="h-2.5 w-2.5" />
-                        </button>
-                        {qty > 0 && (
-                          <button
-                            type="button"
-                            className="flex h-6 w-6 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                            onClick={() =>
-                              onQtyChange(p.id, Math.max(0, qty - 1))
-                            }
-                            aria-label="Diminuer la quantité"
-                          >
-                            <IconChevronDown className="h-2.5 w-2.5" />
-                          </button>
-                        )}
                       </div>
                     </div>
                   </td>
