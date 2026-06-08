@@ -8,9 +8,11 @@ import { ORDER_UNITS } from "@/lib/order-units";
 
 type Props = {
   supplierLabel: string;
+  fixedSupplierId?: string;
+  supplierOptions?: { id: string; name: string }[];
   open: boolean;
   onClose: () => void;
-  onAdd: (input: ManualProductInput) => void;
+  onAdd: (supplierId: string, input: ManualProductInput) => void;
 };
 
 const emptyForm = (): ManualProductInput => ({
@@ -23,6 +25,8 @@ const emptyForm = (): ManualProductInput => ({
 
 export function AddManualProductModal({
   supplierLabel,
+  fixedSupplierId,
+  supplierOptions,
   open,
   onClose,
   onAdd,
@@ -31,6 +35,10 @@ export function AddManualProductModal({
   const [form, setForm] = useState(emptyForm);
   const [priceText, setPriceText] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [pickedSupplierId, setPickedSupplierId] = useState("");
+
+  const needsSupplierPick =
+    !fixedSupplierId && (supplierOptions?.length ?? 0) > 0;
 
   useEffect(() => {
     const el = dialogRef.current;
@@ -39,11 +47,12 @@ export function AddManualProductModal({
       setForm(emptyForm());
       setPriceText("");
       setErr(null);
+      setPickedSupplierId(supplierOptions?.[0]?.id ?? "");
       el.showModal();
     } else {
       el.close();
     }
-  }, [open]);
+  }, [open, supplierOptions]);
 
   useEffect(() => {
     const el = dialogRef.current;
@@ -59,6 +68,11 @@ export function AddManualProductModal({
       setErr("Indiquez un nom de produit.");
       return;
     }
+    const targetSupplierId = fixedSupplierId ?? pickedSupplierId;
+    if (!targetSupplierId) {
+      setErr("Choisissez un fournisseur.");
+      return;
+    }
     let unitPrice: number | undefined;
     const pt = priceText.trim().replace(",", ".");
     if (pt !== "") {
@@ -70,7 +84,7 @@ export function AddManualProductModal({
       unitPrice = n;
     }
     setErr(null);
-    onAdd({
+    onAdd(targetSupplierId, {
       name,
       category: form.category,
       location: form.location,
@@ -101,6 +115,26 @@ export function AddManualProductModal({
         </div>
 
         <div className="space-y-4 px-5 py-4">
+          {needsSupplierPick ? (
+            <label className="block text-sm font-medium">
+              Fournisseur
+              <select
+                value={pickedSupplierId}
+                onChange={(e) => {
+                  setPickedSupplierId(e.target.value);
+                  setErr(null);
+                }}
+                className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900"
+              >
+                {supplierOptions!.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
           <label className="block text-sm font-medium">
             Nom du produit
             <input

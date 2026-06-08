@@ -74,13 +74,13 @@ export function ProductTable({
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
       <div className="max-md:overflow-visible md:overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full text-left text-base md:text-sm">
           <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
+            <tr className="border-b border-zinc-200 bg-zinc-50 text-sm uppercase tracking-wide text-zinc-500 md:text-xs dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
               <th className="hidden px-4 py-3 font-medium md:table-cell">
                 Code
               </th>
-              <th className="px-4 py-3 font-medium">Produit</th>
+              <th className="px-3 py-3.5 font-medium md:px-4 md:py-3">Produit</th>
               <th className="hidden px-4 py-3 font-medium md:table-cell">
                 Catégorie
               </th>
@@ -90,7 +90,7 @@ export function ProductTable({
               <th className="hidden px-4 py-3 text-right font-medium md:table-cell">
                 PU HT
               </th>
-              <th className="w-[8.5rem] shrink-0 px-4 py-3 text-center font-medium md:w-auto">
+              <th className="w-[10.5rem] shrink-0 px-2 py-3.5 text-center font-medium md:w-[8.5rem] md:px-4 md:py-3">
                 <span className="md:hidden">Qté · Unité</span>
                 <span className="hidden md:inline">Qté / Unité</span>
               </th>
@@ -114,7 +114,7 @@ export function ProductTable({
                   <td className="hidden whitespace-nowrap px-4 py-2.5 font-mono text-xs text-zinc-600 md:table-cell dark:text-zinc-400">
                     {p.isManual ? "—" : p.code || "—"}
                   </td>
-                  <td className="min-w-0 px-4 py-2.5 font-medium text-zinc-900 dark:text-zinc-100">
+                  <td className="min-w-0 px-3 py-3.5 text-[15px] leading-snug font-medium text-zinc-900 md:px-4 md:py-2.5 md:text-sm dark:text-zinc-100">
                     <div className="flex items-start justify-between gap-2">
                       <span className="block break-words">{p.name}</span>
                       {p.isManual && onRemoveManual && (
@@ -148,10 +148,10 @@ export function ProductTable({
                       </>
                     )}
                   </td>
-                  <td className="px-4 py-2">
-                    <div className="ml-auto flex max-w-[9.5rem] items-center justify-end gap-1.5 md:mx-auto">
-                      <div className="flex items-center gap-1">
-                        <div className="flex h-7 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/30 dark:border-zinc-600 dark:bg-zinc-900">
+                  <td className="px-2 py-3 md:px-4 md:py-2">
+                    <div className="ml-auto flex max-w-[11rem] items-center justify-end gap-2 md:mx-auto md:max-w-[9.5rem] md:gap-1.5">
+                      <div className="flex items-center gap-1.5 md:gap-1">
+                        <div className="flex h-10 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/30 md:h-7 md:rounded-lg dark:border-zinc-600 dark:bg-zinc-900">
                           <input
                             type="number"
                             min={0}
@@ -166,28 +166,28 @@ export function ProductTable({
                                 Number.isFinite(n) ? n : 0,
                               );
                             }}
-                            className="h-full w-9 border-0 bg-transparent px-1 py-0 text-center text-sm tabular-nums outline-none [appearance:textfield] focus:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none sm:w-10"
+                            className="h-full w-12 border-0 bg-transparent px-1 py-0 text-center text-lg font-medium tabular-nums outline-none [appearance:textfield] focus:ring-0 md:w-9 md:text-sm md:font-normal [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                             aria-label={`Quantité pour ${p.name}`}
                           />
                           <div className="flex flex-col border-l border-zinc-200 dark:border-zinc-600">
                             <button
                               type="button"
-                              className="flex h-[14px] w-5 items-center justify-center bg-zinc-50 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                              className="flex h-5 w-7 items-center justify-center bg-zinc-50 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 md:h-[14px] md:w-5 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
                               onClick={() => onQtyChange(p.id, qty + 1)}
                               aria-label="Augmenter la quantité"
                             >
-                              <IconChevronUp className="h-2 w-2" />
+                              <IconChevronUp className="h-3 w-3 md:h-2 md:w-2" />
                             </button>
                             <button
                               type="button"
                               disabled={qty <= 0}
-                              className="flex h-[14px] w-5 items-center justify-center border-t border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 disabled:cursor-default disabled:opacity-40 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                              className="flex h-5 w-7 items-center justify-center border-t border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200 disabled:cursor-default disabled:opacity-40 md:h-[14px] md:w-5 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
                               onClick={() =>
                                 onQtyChange(p.id, Math.max(0, qty - 1))
                               }
                               aria-label="Diminuer la quantité"
                             >
-                              <IconChevronDown className="h-2 w-2" />
+                              <IconChevronDown className="h-3 w-3 md:h-2 md:w-2" />
                             </button>
                           </div>
                         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   ManualBySupplier,
   ManualProductInput,
@@ -21,7 +21,7 @@ import {
   orderUnitLabel,
   resolveOrderUnitId,
 } from "@/lib/order-unit-options";
-import { loadOrderUnitDefaults, saveOrderUnitDefault } from "@/lib/order-unit-defaults-storage";
+import { loadOrderSelection, saveOrderSelection, saveProductOrderUnit, saveProfileUnitDefault } from "@/lib/order-selection-storage";
 import { FilterBar } from "./FilterBar";
 import { ProductTable } from "./ProductTable";
 import { OrderDock } from "./OrderDock";
@@ -41,15 +41,41 @@ export function SupplyCatalog({ suppliers, products }: Props) {
   const [selectionMode, setSelectionMode] = useState<"all" | "selected">(
     "all",
   );
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [orderUnits, setOrderUnits] = useState<Record<string, string>>({});
-  const [unitDefaults, setUnitDefaults] = useState<Record<string, string>>(
-    {},
-  );
+  const [quantities, setQuantities] = useState<Record<string, number>>(() => {
+    if (typeof window === "undefined") return {};
+    return loadOrderSelection().quantities;
+  });
+  const [orderUnits, setOrderUnits] = useState<Record<string, string>>(() => {
+    if (typeof window === "undefined") return {};
+    return loadOrderSelection().orderUnits;
+  });
+  const [profileUnitDefaults, setProfileUnitDefaults] = useState<
+    Record<string, string>
+  >(() => {
+    if (typeof window === "undefined") return {};
+    return loadOrderSelection().profileUnitDefaults;
+  });
+  const [selectionHydrated, setSelectionHydrated] = useState(false);
+  const selectionRef = useRef({
+    quantities: {} as Record<string, number>,
+    orderUnits: {} as Record<string, string>,
+    profileUnitDefaults: {} as Record<string, string>,
+  });
+
+  selectionRef.current = { quantities, orderUnits, profileUnitDefaults };
 
   useEffect(() => {
-    setUnitDefaults(loadOrderUnitDefaults());
+    const saved = loadOrderSelection();
+    setQuantities(saved.quantities);
+    setOrderUnits(saved.orderUnits);
+    setProfileUnitDefaults(saved.profileUnitDefaults);
+    setSelectionHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!selectionHydrated) return;
+    saveOrderSelection(quantities, orderUnits, profileUnitDefaults);
+  }, [quantities, orderUnits, profileUnitDefaults, selectionHydrated]);
   const [emailOpen, setEmailOpen] = useState(false);
   const [manualBySupplier, setManualBySupplier] =
     useState<ManualBySupplier>({});
@@ -59,7 +85,12 @@ export function SupplyCatalog({ suppliers, products }: Props) {
   }, []);
 
   const scopedProducts = useMemo(() => {
-    if (supplierId === "all") return products;
+    if (supplierId === "all") {
+      const manualRows = Object.values(manualBySupplier)
+        .flat()
+        .map(manualProductToRow);
+      return [...manualRows, ...products];
+    }
     const manualRows = (manualBySupplier[supplierId] ?? []).map(
       manualProductToRow,
     );
@@ -152,13 +183,13 @@ export function SupplyCatalog({ suppliers, products }: Props) {
           code: p.isManual ? "—" : p.code,
           qty,
           unit: orderUnitLabel(
-            resolveOrderUnitId(p, orderUnits, unitDefaults),
+            resolveOrderUnitId(p, orderUnits, profileUnitDefaults),
           ),
         });
       }
     }
     return out;
-  }, [activeSupplier, rowsForActiveSupplier, quantities, orderUnits, unitDefaults]);
+  }, [activeSupplier, rowsForActiveSupplier, quantities, orderUnits, profileUnitDefaults]);
 
   /** Estimation HT : Σ (qté × PU catalogue). Les PU ne sont pas forcément ceux du jour. */
   const estimatedSubtotalHt = useMemo(() => {
@@ -177,13 +208,11 @@ export function SupplyCatalog({ suppliers, products }: Props) {
     setSupplierId(v);
     setCategory("all");
     setLocation("all");
-    setOrderUnits({});
   };
 
-  const handleAddManual = (input: ManualProductInput) => {
-    if (supplierId === "all") return;
+  const handleAddManual = (targetSupplierId: string, input: ManualProductInput) => {
     try {
-      addManualProduct(supplierId, input);
+      addManualProduct(targetSupplierId, input);
       setManualBySupplier(loadManualBySupplier());
     } catch {
       /* noop — validation côté UI */
@@ -191,8 +220,14 @@ export function SupplyCatalog({ suppliers, products }: Props) {
   };
 
   const handleRemoveManual = (productId: string) => {
-    if (supplierId === "all") return;
-    removeManualProduct(supplierId, productId);
+    const ownerSupplierId =
+      supplierId !== "all"
+        ? supplierId
+        : Object.entries(manualBySupplier).find(([, list]) =>
+            list.some((p) => p.id === productId),
+          )?.[0];
+    if (!ownerSupplierId) return;
+    removeManualProduct(ownerSupplierId, productId);
     setManualBySupplier(loadManualBySupplier());
     setQuantities((prev) => {
       const next = { ...prev };
@@ -235,27 +270,49 @@ export function SupplyCatalog({ suppliers, products }: Props) {
           products={filteredProducts}
           quantities={quantities}
           orderUnits={orderUnits}
-          unitDefaults={unitDefaults}
+          unitDefaults={profileUnitDefaults}
           onQtyChange={(id, qty) =>
             setQuantities((prev) => ({ ...prev, [id]: qty }))
           }
-          onOrderUnitChange={(id, unitId) =>
-            setOrderUnits((prev) => ({ ...prev, [id]: unitId }))
-          }
-          onSetUnitDefault={(profileKey, unitId) => {
-            setUnitDefaults(saveOrderUnitDefault(profileKey, unitId));
+          onOrderUnitChange={(id, unitId) => {
+            const cur = selectionRef.current;
+            const nextUnits = saveProductOrderUnit(
+              id,
+              unitId,
+              cur.quantities,
+              cur.orderUnits,
+              cur.profileUnitDefaults,
+            );
+            setOrderUnits(nextUnits);
           }}
-          onRemoveManual={
-            supplierId !== "all" ? handleRemoveManual : undefined
-          }
+          onSetUnitDefault={(profileKey, unitId) => {
+            const cur = selectionRef.current;
+            const nextDefaults = saveProfileUnitDefault(
+              profileKey,
+              unitId,
+              cur.quantities,
+              cur.orderUnits,
+              cur.profileUnitDefaults,
+            );
+            setProfileUnitDefaults(nextDefaults);
+          }}
+          onRemoveManual={handleRemoveManual}
         />
 
-        {supplierId !== "all" && activeSupplier && (
-          <AddManualProduct
-            supplierLabel={activeSupplier.name}
-            onAdd={handleAddManual}
-          />
-        )}
+        <AddManualProduct
+          supplierLabel={
+            activeSupplier?.name ?? "tous les fournisseurs"
+          }
+          fixedSupplierId={
+            supplierId !== "all" ? supplierId : undefined
+          }
+          supplierOptions={
+            supplierId === "all"
+              ? suppliers.map((s) => ({ id: s.id, name: s.name }))
+              : undefined
+          }
+          onAdd={handleAddManual}
+        />
       </div>
 
       {activeSupplier && (

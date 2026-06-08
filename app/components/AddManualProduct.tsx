@@ -4,12 +4,24 @@ import { useState } from "react";
 import type { ManualProductInput } from "@/types/supply";
 import { AddManualProductModal } from "./AddManualProductModal";
 
+type SupplierOption = { id: string; name: string };
+
 type Props = {
+  /** Libellé affiché (fournisseur actif ou « tous »). */
   supplierLabel: string;
-  onAdd: (input: ManualProductInput) => void;
+  /** Fournisseur cible quand un seul est sélectionné. */
+  fixedSupplierId?: string;
+  /** Liste pour choisir le fournisseur (vue « tous »). */
+  supplierOptions?: SupplierOption[];
+  onAdd: (supplierId: string, input: ManualProductInput) => void;
 };
 
-export function AddManualProduct({ supplierLabel, onAdd }: Props) {
+export function AddManualProduct({
+  supplierLabel,
+  fixedSupplierId,
+  supplierOptions,
+  onAdd,
+}: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -33,6 +45,8 @@ export function AddManualProduct({ supplierLabel, onAdd }: Props) {
 
       <AddManualProductModal
         supplierLabel={supplierLabel}
+        fixedSupplierId={fixedSupplierId}
+        supplierOptions={supplierOptions}
         open={open}
         onClose={() => setOpen(false)}
         onAdd={onAdd}

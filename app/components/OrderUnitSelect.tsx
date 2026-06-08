@@ -47,7 +47,7 @@ export function OrderUnitSelect({
   if (options.length <= 1) {
     return (
       <span
-        className="shrink-0 text-[11px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
+        className="shrink-0 text-xs font-bold uppercase tracking-wide text-zinc-500 md:text-[11px] dark:text-zinc-400"
         title={options[0]?.label ?? abbrev}
       >
         {abbrev}
@@ -60,7 +60,7 @@ export function OrderUnitSelect({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-0.5 rounded-md px-0.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+        className="inline-flex items-center gap-0.5 rounded-md px-1 py-1 text-xs font-bold uppercase tracking-wide text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 md:px-0.5 md:py-0.5 md:text-[11px] dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={listId}
@@ -70,7 +70,7 @@ export function OrderUnitSelect({
         <svg
           viewBox="0 0 20 20"
           fill="currentColor"
-          className={`h-3.5 w-3.5 text-zinc-400 transition ${open ? "rotate-180" : ""}`}
+          className={`h-4 w-4 text-zinc-400 transition md:h-3.5 md:w-3.5 ${open ? "rotate-180" : ""}`}
           aria-hidden
         >
           <path
