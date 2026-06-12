@@ -46,10 +46,9 @@ type Props = {
   products: Product[];
   quantities: Record<string, number>;
   orderUnits: Record<string, string>;
-  unitDefaults: Record<string, string>;
   onQtyChange: (productId: string, qty: number) => void;
   onOrderUnitChange: (productId: string, unitId: string) => void;
-  onSetUnitDefault: (profileKey: string, unitId: string) => void;
+  onSetUnitDefault: (productId: string, unitId: string) => void;
   onRemoveManual?: (productId: string) => void;
 };
 
@@ -57,7 +56,6 @@ export function ProductTable({
   products,
   quantities,
   orderUnits,
-  unitDefaults,
   onQtyChange,
   onOrderUnitChange,
   onSetUnitDefault,
@@ -90,7 +88,7 @@ export function ProductTable({
               <th className="hidden px-4 py-3 text-right font-medium md:table-cell">
                 PU HT
               </th>
-              <th className="w-[10.5rem] shrink-0 px-2 py-3.5 text-center font-medium md:w-[8.5rem] md:px-4 md:py-3">
+              <th className="w-[10.5rem] shrink-0 px-2 py-3.5 text-left font-medium md:w-[8.5rem] md:px-4 md:py-3">
                 <span className="md:hidden">Qté · Unité</span>
                 <span className="hidden md:inline">Qté / Unité</span>
               </th>
@@ -100,7 +98,7 @@ export function ProductTable({
             {products.map((p, i) => {
               const qty = quantities[p.id] ?? 0;
               const profile = getOrderUnitProfile(p);
-              const unitId = resolveOrderUnitId(p, orderUnits, unitDefaults);
+              const unitId = resolveOrderUnitId(p, orderUnits);
               const abbrev = orderUnitAbbrev(unitId);
               return (
                 <tr
@@ -149,7 +147,7 @@ export function ProductTable({
                     )}
                   </td>
                   <td className="px-2 py-3 md:px-4 md:py-2">
-                    <div className="ml-auto flex max-w-[11rem] items-center justify-end gap-2 md:mx-auto md:max-w-[9.5rem] md:gap-1.5">
+                    <div className="flex max-w-[11rem] items-center justify-start gap-2 md:max-w-[9.5rem] md:gap-1.5">
                       <div className="flex items-center gap-1.5 md:gap-1">
                         <div className="flex h-10 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/30 md:h-7 md:rounded-lg dark:border-zinc-600 dark:bg-zinc-900">
                           <input
@@ -166,7 +164,7 @@ export function ProductTable({
                                 Number.isFinite(n) ? n : 0,
                               );
                             }}
-                            className="h-full w-12 border-0 bg-transparent px-1 py-0 text-center text-lg font-medium tabular-nums outline-none [appearance:textfield] focus:ring-0 md:w-9 md:text-sm md:font-normal [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            className="h-full w-12 border-0 bg-transparent px-2 py-0 text-left text-lg font-medium tabular-nums outline-none [appearance:textfield] focus:ring-0 md:w-9 md:px-1.5 md:text-sm md:font-normal [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                             aria-label={`Quantité pour ${p.name}`}
                           />
                           <div className="flex flex-col border-l border-zinc-200 dark:border-zinc-600">
@@ -195,8 +193,8 @@ export function ProductTable({
                           valueId={unitId}
                           abbrev={abbrev}
                           options={profile.units}
-                          profileKey={profile.key}
-                          savedDefaultId={unitDefaults[profile.key]}
+                          productId={p.id}
+                          savedDefaultId={orderUnits[p.id]}
                           productName={p.name}
                           onChange={(id) => onOrderUnitChange(p.id, id)}
                           onSetDefault={onSetUnitDefault}

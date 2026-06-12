@@ -7,18 +7,18 @@ type Props = {
   valueId: string;
   options: readonly OrderUnitOption[];
   abbrev: string;
-  profileKey: string;
+  productId: string;
   savedDefaultId: string | undefined;
   productName: string;
   onChange: (unitId: string) => void;
-  onSetDefault: (profileKey: string, unitId: string) => void;
+  onSetDefault: (productId: string, unitId: string) => void;
 };
 
 export function OrderUnitSelect({
   valueId,
   options,
   abbrev,
-  profileKey,
+  productId,
   savedDefaultId,
   productName,
   onChange,
@@ -116,13 +116,13 @@ export function OrderUnitSelect({
                   </button>
                   <label
                     className="flex shrink-0 cursor-pointer items-center gap-1 rounded px-1 py-0.5 text-[10px] font-medium text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    title="Utiliser par défaut pour ce type de produit"
+                    title="Utiliser par défaut pour ce produit"
                   >
                     <input
                       type="checkbox"
                       checked={isDefault}
                       onChange={() => {
-                        onSetDefault(profileKey, opt.id);
+                        onSetDefault(productId, opt.id);
                         onChange(opt.id);
                       }}
                       className="h-3.5 w-3.5 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500/40"

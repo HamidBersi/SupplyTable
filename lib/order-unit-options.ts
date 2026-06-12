@@ -274,18 +274,12 @@ export function getOrderUnitOption(unitId: string): OrderUnitOption {
 export function resolveOrderUnitId(
   product: Product,
   productUnits: Record<string, string>,
-  profileDefaults: Record<string, string>,
 ): string {
   const profile = getOrderUnitProfile(product);
 
   const perProduct = productUnits[product.id]?.trim();
   if (perProduct && profile.units.some((u) => u.id === perProduct)) {
     return perProduct;
-  }
-
-  const profileDefault = profileDefaults[profile.key]?.trim();
-  if (profileDefault && profile.units.some((u) => u.id === profileDefault)) {
-    return profileDefault;
   }
 
   return profile.defaultUnitId;

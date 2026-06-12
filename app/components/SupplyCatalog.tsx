@@ -21,7 +21,7 @@ import {
   orderUnitLabel,
   resolveOrderUnitId,
 } from "@/lib/order-unit-options";
-import { loadOrderSelection, saveOrderSelection, saveProductOrderUnit, saveProfileUnitDefault } from "@/lib/order-selection-storage";
+import { loadOrderSelection, saveOrderSelection, saveProductOrderUnit } from "@/lib/order-selection-storage";
 import { FilterBar } from "./FilterBar";
 import { ProductTable } from "./ProductTable";
 import { OrderDock } from "./OrderDock";
@@ -182,14 +182,12 @@ export function SupplyCatalog({ suppliers, products }: Props) {
           name: p.name,
           code: p.isManual ? "—" : p.code,
           qty,
-          unit: orderUnitLabel(
-            resolveOrderUnitId(p, orderUnits, profileUnitDefaults),
-          ),
+          unit: orderUnitLabel(resolveOrderUnitId(p, orderUnits)),
         });
       }
     }
     return out;
-  }, [activeSupplier, rowsForActiveSupplier, quantities, orderUnits, profileUnitDefaults]);
+  }, [activeSupplier, rowsForActiveSupplier, quantities, orderUnits]);
 
   /** Estimation HT : Σ (qté × PU catalogue). Les PU ne sont pas forcément ceux du jour. */
   const estimatedSubtotalHt = useMemo(() => {
@@ -270,7 +268,6 @@ export function SupplyCatalog({ suppliers, products }: Props) {
           products={filteredProducts}
           quantities={quantities}
           orderUnits={orderUnits}
-          unitDefaults={profileUnitDefaults}
           onQtyChange={(id, qty) =>
             setQuantities((prev) => ({ ...prev, [id]: qty }))
           }
@@ -285,16 +282,16 @@ export function SupplyCatalog({ suppliers, products }: Props) {
             );
             setOrderUnits(nextUnits);
           }}
-          onSetUnitDefault={(profileKey, unitId) => {
+          onSetUnitDefault={(productId, unitId) => {
             const cur = selectionRef.current;
-            const nextDefaults = saveProfileUnitDefault(
-              profileKey,
+            const nextUnits = saveProductOrderUnit(
+              productId,
               unitId,
               cur.quantities,
               cur.orderUnits,
               cur.profileUnitDefaults,
             );
-            setProfileUnitDefaults(nextDefaults);
+            setOrderUnits(nextUnits);
           }}
           onRemoveManual={handleRemoveManual}
         />
