@@ -108,7 +108,7 @@ export function LoginForm({ authReady, defaultEmail }: LoginFormProps) {
         </p>
       ) : null}
       <div className="space-y-4">
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label className="block text-sm font-medium text-foreground">
           Email
           <input
             name="email"
@@ -116,10 +116,10 @@ export function LoginForm({ authReady, defaultEmail }: LoginFormProps) {
             autoComplete="email"
             defaultValue={defaultEmail}
             required
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-900 shadow-sm outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+            className="field-input mt-1 w-full"
           />
         </label>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label className="block text-sm font-medium text-foreground">
           Mot de passe
           <div className="relative mt-1">
             <input
@@ -127,12 +127,12 @@ export function LoginForm({ authReady, defaultEmail }: LoginFormProps) {
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               required
-              className="w-full rounded-md border border-zinc-300 bg-white py-2 pl-3 pr-11 text-zinc-900 shadow-sm outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+              className="field-input w-full py-2 pr-11 pl-3"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-3 text-zinc-500 transition hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+              className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-3 text-muted transition hover:text-foreground"
               aria-pressed={showPassword}
               aria-label={
                 showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"
@@ -150,7 +150,7 @@ export function LoginForm({ authReady, defaultEmail }: LoginFormProps) {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-md bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        className="btn-primary w-full py-2.5 disabled:opacity-60"
       >
         {pending ? "Connexion…" : "Se connecter"}
       </button>

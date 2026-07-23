@@ -47,7 +47,7 @@ export function OrderUnitSelect({
   if (options.length <= 1) {
     return (
       <span
-        className="shrink-0 text-xs font-bold uppercase tracking-wide text-zinc-500 md:text-[11px] dark:text-zinc-400"
+        className="min-w-[2.25rem] shrink-0 text-center text-[11px] font-semibold tracking-wide text-muted uppercase"
         title={options[0]?.label ?? abbrev}
       >
         {abbrev}
@@ -60,7 +60,7 @@ export function OrderUnitSelect({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-0.5 rounded-md px-1 py-1 text-xs font-bold uppercase tracking-wide text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 md:px-0.5 md:py-0.5 md:text-[11px] dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+        className="inline-flex min-w-[2.75rem] items-center justify-center gap-0.5 rounded-md px-1.5 py-1.5 text-[11px] font-semibold tracking-wide text-foreground uppercase transition hover:bg-surface-muted"
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={listId}
@@ -70,7 +70,7 @@ export function OrderUnitSelect({
         <svg
           viewBox="0 0 20 20"
           fill="currentColor"
-          className={`h-4 w-4 text-zinc-400 transition md:h-3.5 md:w-3.5 ${open ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 text-muted transition ${open ? "rotate-180" : ""}`}
           aria-hidden
         >
           <path
@@ -85,7 +85,7 @@ export function OrderUnitSelect({
         <ul
           id={listId}
           role="listbox"
-          className="absolute right-0 z-50 mt-1 min-w-[10.5rem] overflow-hidden rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
+          className="absolute right-0 z-50 mt-1 min-w-[11rem] overflow-hidden rounded-lg border border-border bg-surface py-1 shadow-lg"
         >
           {options.map((opt) => {
             const selected = opt.id === valueId;
@@ -95,8 +95,8 @@ export function OrderUnitSelect({
                 <div
                   className={`flex items-center gap-2 px-2 py-1.5 text-left text-sm ${
                     selected
-                      ? "bg-emerald-50 dark:bg-emerald-950/40"
-                      : "hover:bg-zinc-50 dark:hover:bg-zinc-800/80"
+                      ? "bg-accent-soft"
+                      : "hover:bg-surface-muted"
                   }`}
                 >
                   <button
@@ -107,15 +107,13 @@ export function OrderUnitSelect({
                       setOpen(false);
                     }}
                   >
-                    <span className="w-8 shrink-0 text-xs font-bold uppercase text-zinc-800 dark:text-zinc-100">
+                    <span className="w-8 shrink-0 text-xs font-bold text-foreground uppercase">
                       {opt.abbrev}
                     </span>
-                    <span className="truncate text-zinc-600 dark:text-zinc-300">
-                      {opt.label}
-                    </span>
+                    <span className="truncate text-muted">{opt.label}</span>
                   </button>
                   <label
-                    className="flex shrink-0 cursor-pointer items-center gap-1 rounded px-1 py-0.5 text-[10px] font-medium text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    className="flex shrink-0 cursor-pointer items-center gap-1 rounded px-1 py-0.5 text-[10px] font-medium text-muted hover:bg-surface-muted"
                     title="Utiliser par défaut pour ce produit"
                   >
                     <input
@@ -125,7 +123,7 @@ export function OrderUnitSelect({
                         onSetDefault(productId, opt.id);
                         onChange(opt.id);
                       }}
-                      className="h-3.5 w-3.5 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500/40"
+                      className="h-3.5 w-3.5 rounded border-border text-accent focus:ring-ring"
                     />
                     <span className="sr-only">Par défaut</span>
                     <span aria-hidden>déf.</span>

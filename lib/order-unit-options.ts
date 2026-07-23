@@ -157,6 +157,13 @@ function applyCategoryRules(
       else if (code === "UN") defaultUnitId = U.UN.id;
       break;
 
+    case "Poissons":
+      units = dedupeUnits([U.KG, U.UN, U.COL, U.PQT, ...units]);
+      if (code === "KG") defaultUnitId = U.KG.id;
+      else if (code === "UN") defaultUnitId = U.UN.id;
+      else if (code === "PAQ" || code === "PQT") defaultUnitId = U.PQT.id;
+      break;
+
     case "Boissons":
       units = dedupeUnits([U.COL, U.UN, U.CTN, ...units]);
       defaultUnitId = code === "UN" ? U.UN.id : U.COL.id;

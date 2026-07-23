@@ -1,32 +1,47 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type {
-  ManualBySupplier,
-  ManualProductInput,
-  OrderLine,
-  Product,
-  Supplier,
-} from "@/types/supply";
 import {
   addManualProduct,
   loadManualBySupplier,
-  removeManualProduct,
+  saveManualBySupplier,
 } from "@/lib/manual-products-storage";
 import { manualProductToRow } from "@/lib/manual-to-product";
 import { STORAGE_LOCATIONS } from "@/lib/locations";
 import { PRODUCT_CATEGORIES } from "@/lib/product-categories";
 import { productMatchesSearch } from "@/lib/product-search";
 import {
-  orderUnitLabel,
+  orderUnitAbbrev,
   resolveOrderUnitId,
 } from "@/lib/order-unit-options";
+import { sentenceCaseFr } from "@/lib/text";
+import {
+  applyProductOverride,
+  hideProduct,
+  loadProductOverrides,
+  saveProductOverrides,
+} from "@/lib/product-overrides-storage";
+import type { ProductOverride } from "@/types/supply";
 import { loadOrderSelection, saveOrderSelection, saveProductOrderUnit } from "@/lib/order-selection-storage";
+import type {
+  ManualBySupplier,
+  ManualProductInput,
+  OrderLine,
+  Product,
+  ProductOverridesMap,
+  Supplier,
+} from "@/types/supply";
 import { FilterBar } from "./FilterBar";
 import { ProductTable } from "./ProductTable";
 import { OrderDock } from "./OrderDock";
 import { EmailOrderDialog } from "./EmailOrderDialog";
 import { AddManualProduct } from "./AddManualProduct";
+import {
+  EditProductModal,
+  type ProductEditValues,
+} from "./EditProductModal";
+import { HiddenProductsDialog } from "./HiddenProductsDialog";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 type Props = {
   suppliers: Supplier[];
@@ -41,20 +56,13 @@ export function SupplyCatalog({ suppliers, products }: Props) {
   const [selectionMode, setSelectionMode] = useState<"all" | "selected">(
     "all",
   );
-  const [quantities, setQuantities] = useState<Record<string, number>>(() => {
-    if (typeof window === "undefined") return {};
-    return loadOrderSelection().quantities;
-  });
-  const [orderUnits, setOrderUnits] = useState<Record<string, string>>(() => {
-    if (typeof window === "undefined") return {};
-    return loadOrderSelection().orderUnits;
-  });
+  // Toujours {} au 1er rendu (SSR = client) pour éviter un mismatch d’hydratation ;
+  // localStorage est lu dans l’effet ci-dessous.
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [orderUnits, setOrderUnits] = useState<Record<string, string>>({});
   const [profileUnitDefaults, setProfileUnitDefaults] = useState<
     Record<string, string>
-  >(() => {
-    if (typeof window === "undefined") return {};
-    return loadOrderSelection().profileUnitDefaults;
-  });
+  >({});
   const [selectionHydrated, setSelectionHydrated] = useState(false);
   const selectionRef = useRef({
     quantities: {} as Record<string, number>,
@@ -79,12 +87,17 @@ export function SupplyCatalog({ suppliers, products }: Props) {
   const [emailOpen, setEmailOpen] = useState(false);
   const [manualBySupplier, setManualBySupplier] =
     useState<ManualBySupplier>({});
+  const [overrides, setOverrides] = useState<ProductOverridesMap>({});
+  const [hiddenListOpen, setHiddenListOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [pendingHide, setPendingHide] = useState<Product | null>(null);
 
   useEffect(() => {
     setManualBySupplier(loadManualBySupplier());
+    setOverrides(loadProductOverrides());
   }, []);
 
-  const scopedProducts = useMemo(() => {
+  const baseScopedProducts = useMemo(() => {
     if (supplierId === "all") {
       const manualRows = Object.values(manualBySupplier)
         .flat()
@@ -97,6 +110,26 @@ export function SupplyCatalog({ suppliers, products }: Props) {
     const catalog = products.filter((p) => p.supplierId === supplierId);
     return [...manualRows, ...catalog];
   }, [products, supplierId, manualBySupplier]);
+
+  const originalById = useMemo(() => {
+    const m = new Map<string, Product>();
+    for (const p of baseScopedProducts) m.set(p.id, p);
+    return m;
+  }, [baseScopedProducts]);
+
+  const scopedProducts = useMemo(() => {
+    return baseScopedProducts
+      .filter((p) => overrides[p.id]?.hidden !== true)
+      .map((p) => applyProductOverride(p, overrides[p.id]));
+  }, [baseScopedProducts, overrides]);
+
+  const hiddenProducts = useMemo(() => {
+    return baseScopedProducts
+      .filter((p) => overrides[p.id]?.hidden === true)
+      .map((p) => applyProductOverride(p, overrides[p.id]));
+  }, [baseScopedProducts, overrides]);
+
+  const hiddenCount = hiddenProducts.length;
 
   const categoryOptions = useMemo(() => {
     const present = new Set(scopedProducts.map((p) => p.category));
@@ -168,8 +201,10 @@ export function SupplyCatalog({ suppliers, products }: Props) {
     const catalog = products.filter(
       (p) => p.supplierId === activeSupplier.id,
     );
-    return [...manualRows, ...catalog];
-  }, [activeSupplier, manualBySupplier, products]);
+    return [...manualRows, ...catalog]
+      .filter((p) => overrides[p.id]?.hidden !== true)
+      .map((p) => applyProductOverride(p, overrides[p.id]));
+  }, [activeSupplier, manualBySupplier, products, overrides]);
 
   const orderLines: OrderLine[] = useMemo(() => {
     if (!activeSupplier) return [];
@@ -179,10 +214,10 @@ export function SupplyCatalog({ suppliers, products }: Props) {
       if (qty > 0) {
         out.push({
           productId: p.id,
-          name: p.name,
+          name: sentenceCaseFr(p.name),
           code: p.isManual ? "—" : p.code,
           qty,
-          unit: orderUnitLabel(resolveOrderUnitId(p, orderUnits)),
+          unit: orderUnitAbbrev(resolveOrderUnitId(p, orderUnits)),
         });
       }
     }
@@ -210,38 +245,100 @@ export function SupplyCatalog({ suppliers, products }: Props) {
 
   const handleAddManual = (targetSupplierId: string, input: ManualProductInput) => {
     try {
-      addManualProduct(targetSupplierId, input);
+      addManualProduct(targetSupplierId, {
+        ...input,
+        name: sentenceCaseFr(input.name),
+        category: sentenceCaseFr(input.category),
+        location: sentenceCaseFr(input.location),
+      });
       setManualBySupplier(loadManualBySupplier());
     } catch {
       /* noop — validation côté UI */
     }
   };
 
-  const handleRemoveManual = (productId: string) => {
-    const ownerSupplierId =
-      supplierId !== "all"
-        ? supplierId
-        : Object.entries(manualBySupplier).find(([, list]) =>
-            list.some((p) => p.id === productId),
-          )?.[0];
-    if (!ownerSupplierId) return;
-    removeManualProduct(ownerSupplierId, productId);
-    setManualBySupplier(loadManualBySupplier());
+  const handleHideProduct = (productId: string) => {
+    setOverrides(hideProduct(productId));
     setQuantities((prev) => {
+      if (!(productId in prev)) return prev;
       const next = { ...prev };
       delete next[productId];
       return next;
     });
   };
 
+  const handleSaveProductEdit = (
+    productId: string,
+    values: ProductEditValues,
+  ) => {
+    const original = originalById.get(productId);
+    if (!original) return;
+
+    if (original.isManual) {
+      const ownerSupplierId = original.supplierId;
+      const all = loadManualBySupplier();
+      const list = all[ownerSupplierId] ?? [];
+      const idx = list.findIndex((m) => m.id === productId);
+      if (idx < 0) return;
+      list[idx] = {
+        ...list[idx],
+        name: values.name,
+        category: values.category,
+        location: values.location,
+        ...(values.unitPrice > 0
+          ? { unitPrice: values.unitPrice }
+          : { unitPrice: undefined }),
+      };
+      all[ownerSupplierId] = list;
+      saveManualBySupplier(all);
+      setManualBySupplier(loadManualBySupplier());
+      return;
+    }
+
+    const rebuilt: ProductOverride = {};
+    if (values.name !== original.name) rebuilt.name = values.name;
+    if (values.category !== original.category) {
+      rebuilt.category = values.category;
+    }
+    if (values.location !== original.location) {
+      rebuilt.location = values.location;
+    }
+    if (values.unitPrice !== original.unitPrice) {
+      rebuilt.unitPrice = values.unitPrice;
+    }
+    if (overrides[productId]?.hidden) rebuilt.hidden = true;
+
+    const all = loadProductOverrides();
+    if (Object.keys(rebuilt).length === 0) {
+      delete all[productId];
+    } else {
+      all[productId] = rebuilt;
+    }
+    saveProductOverrides(all);
+    setOverrides(loadProductOverrides());
+  };
+
+  const handleRestoreHidden = (productIds: string[]) => {
+    const all = loadProductOverrides();
+    for (const id of productIds) {
+      const ov = all[id];
+      if (!ov?.hidden) continue;
+      const { hidden: _h, ...rest } = ov;
+      if (Object.keys(rest).length === 0) delete all[id];
+      else all[id] = rest;
+    }
+    saveProductOverrides(all);
+    setOverrides(all);
+  };
+
   return (
     <div className="pb-28">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="mb-8 text-center md:text-left">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Catalogue des Produits
           </h1>
-          <p className="mt-2 hidden max-w-2xl text-sm text-zinc-600 md:block dark:text-zinc-400">
+          <p className="mt-2 hidden max-w-2xl text-sm text-muted md:block">
             Filtrez les produits par fournisseur, catégorie ou emplacement. Vous pouvez également rechercher un produit par nom, code ou catégorie.
           </p>
         </div>
@@ -262,6 +359,19 @@ export function SupplyCatalog({ suppliers, products }: Props) {
             onLocationChange={setLocation}
             onSelectionModeChange={setSelectionMode}
           />
+          {hiddenCount > 0 ? (
+            <p className="mt-3 text-xs text-muted">
+              {hiddenCount} produit{hiddenCount > 1 ? "s" : ""} masqué
+              {hiddenCount > 1 ? "s" : ""}.{" "}
+              <button
+                type="button"
+                className="font-medium text-accent underline-offset-2 hover:underline"
+                onClick={() => setHiddenListOpen(true)}
+              >
+                Voir la liste
+              </button>
+            </p>
+          ) : null}
         </div>
 
         <ProductTable
@@ -293,12 +403,15 @@ export function SupplyCatalog({ suppliers, products }: Props) {
             );
             setOrderUnits(nextUnits);
           }}
-          onRemoveManual={handleRemoveManual}
+          onEditProduct={setEditingProduct}
+          onRequestHideProduct={setPendingHide}
         />
 
         <AddManualProduct
           supplierLabel={
-            activeSupplier?.name ?? "tous les fournisseurs"
+            activeSupplier
+              ? sentenceCaseFr(activeSupplier.name)
+              : "tous les fournisseurs"
           }
           fixedSupplierId={
             supplierId !== "all" ? supplierId : undefined
@@ -311,6 +424,41 @@ export function SupplyCatalog({ suppliers, products }: Props) {
           onAdd={handleAddManual}
         />
       </div>
+
+      <EditProductModal
+        product={editingProduct}
+        originalName={
+          editingProduct
+            ? originalById.get(editingProduct.id)?.name
+            : undefined
+        }
+        open={editingProduct !== null}
+        onClose={() => setEditingProduct(null)}
+        onSave={handleSaveProductEdit}
+      />
+
+      <HiddenProductsDialog
+        open={hiddenListOpen}
+        products={hiddenProducts}
+        onClose={() => setHiddenListOpen(false)}
+        onRestore={handleRestoreHidden}
+      />
+
+      <ConfirmDialog
+        open={pendingHide !== null}
+        title="Masquer ce produit ?"
+        description={
+          pendingHide
+            ? `« ${sentenceCaseFr(pendingHide.name)} » disparaîtra du tableau, sans être supprimé définitivement. Vous pourrez le réafficher plus tard depuis la liste des produits masqués.`
+            : ""
+        }
+        confirmLabel="Masquer"
+        tone="danger"
+        onConfirm={() => {
+          if (pendingHide) handleHideProduct(pendingHide.id);
+        }}
+        onClose={() => setPendingHide(null)}
+      />
 
       {activeSupplier && (
         <>

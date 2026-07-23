@@ -757,7 +757,7 @@
     "category": "Boissons",
     "location": "Bar",
     "unit": "COL",
-    "unitPrice": 21.0
+    "unitPrice": 21
   },
   {
     "id": "vita-impex-boissons-013",
@@ -787,7 +787,7 @@
     "category": "Boissons",
     "location": "Bar",
     "unit": "COL",
-    "unitPrice": 8.0
+    "unitPrice": 8
   },
   {
     "id": "vita-impex-boissons-016",
@@ -867,7 +867,7 @@
     "category": "Boissons",
     "location": "Bar",
     "unit": "BT",
-    "unitPrice": 36.0
+    "unitPrice": 36
   },
   {
     "id": "vita-impex-boissons-024",
@@ -877,7 +877,7 @@
     "category": "Boissons",
     "location": "Bar",
     "unit": "UN",
-    "unitPrice": 8.0
+    "unitPrice": 8
   },
   {
     "id": "vita-impex-boissons-025",
@@ -907,7 +907,7 @@
     "category": "Boissons",
     "location": "Réserve",
     "unit": "BT",
-    "unitPrice": 27.0
+    "unitPrice": 27
   },
   {
     "id": "vita-impex-boissons-028",
@@ -927,7 +927,7 @@
     "category": "Boissons",
     "location": "Bar",
     "unit": "UN",
-    "unitPrice": 18.0
+    "unitPrice": 18
   },
   {
     "id": "vita-impex-boissons-030",
@@ -967,7 +967,7 @@
     "category": "Boissons",
     "location": "Bar",
     "unit": "UN",
-    "unitPrice": 14.0
+    "unitPrice": 14
   },
   {
     "id": "vita-impex-boissons-034",
@@ -1537,7 +1537,7 @@
     "category": "Alimentaire",
     "location": "Stock A",
     "unit": "UN",
-    "unitPrice": 85.0
+    "unitPrice": 85
   },
   {
     "id": "froberest-033",
@@ -1757,7 +1757,7 @@
     "category": "Alimentaire",
     "location": "Frigots bas",
     "unit": "UN",
-    "unitPrice": 6.0
+    "unitPrice": 6
   },
   {
     "id": "essentiel-iller-009",
@@ -2337,7 +2337,7 @@
     "category": "Boissons",
     "location": "Bar",
     "unit": "UN",
-    "unitPrice": 7.0
+    "unitPrice": 7
   },
   {
     "id": "fruits-et-legumes-pomona-et-poi-001",
@@ -2494,9 +2494,9 @@
     "supplierId": "fruits-et-legumes-pomona-et-poi",
     "code": "016",
     "name": "FILET DE SAUMON",
-    "category": "Fruits et légumes",
-    "location": "Réserve",
-    "unit": "COL",
+    "category": "Poissons",
+    "location": "Frigots bas",
+    "unit": "KG",
     "unitPrice": 19.5
   },
   {
@@ -2504,7 +2504,7 @@
     "supplierId": "fruits-et-legumes-pomona-et-poi",
     "code": "017",
     "name": "DOS DE LIEU NOIR",
-    "category": "Fruits et légumes",
+    "category": "Poissons",
     "location": "Frigots hauts",
     "unit": "KG",
     "unitPrice": 19.5
@@ -2618,5 +2618,85 @@
     "location": "Réserve",
     "unit": "SAC",
     "unitPrice": 2.2
+  },
+  {
+    "id": "fruits-et-legumes-pomona-et-poi-029",
+    "supplierId": "fruits-et-legumes-pomona-et-poi",
+    "code": "029",
+    "name": "Dos de cabillaud",
+    "category": "Poissons",
+    "location": "Frigots bas",
+    "unit": "KG",
+    "unitPrice": 18.5
+  },
+  {
+    "id": "fruits-et-legumes-pomona-et-poi-030",
+    "supplierId": "fruits-et-legumes-pomona-et-poi",
+    "code": "030",
+    "name": "Saumon fumé",
+    "category": "Poissons",
+    "location": "Frigots bas",
+    "unit": "PQT",
+    "unitPrice": 22
+  },
+  {
+    "id": "fruits-et-legumes-pomona-et-poi-031",
+    "supplierId": "fruits-et-legumes-pomona-et-poi",
+    "code": "031",
+    "name": "Filet de cabillaud",
+    "category": "Poissons",
+    "location": "Frigots bas",
+    "unit": "KG",
+    "unitPrice": 15.5
+  },
+  {
+    "id": "fruits-et-legumes-pomona-et-poi-032",
+    "supplierId": "fruits-et-legumes-pomona-et-poi",
+    "code": "032",
+    "name": "Filet de bar",
+    "category": "Poissons",
+    "location": "Frigots bas",
+    "unit": "KG",
+    "unitPrice": 24
+  },
+  {
+    "id": "fruits-et-legumes-pomona-et-poi-033",
+    "supplierId": "fruits-et-legumes-pomona-et-poi",
+    "code": "033",
+    "name": "Crevettes",
+    "category": "Poissons",
+    "location": "Frigots bas",
+    "unit": "KG",
+    "unitPrice": 19.5
+  },
+  {
+    "id": "fruits-et-legumes-pomona-et-poi-034",
+    "supplierId": "fruits-et-legumes-pomona-et-poi",
+    "code": "034",
+    "name": "Moules",
+    "category": "Poissons",
+    "location": "Frigots bas",
+    "unit": "KG",
+    "unitPrice": 4.8
+  },
+  {
+    "id": "fruits-et-legumes-pomona-et-poi-035",
+    "supplierId": "fruits-et-legumes-pomona-et-poi",
+    "code": "035",
+    "name": "Calamars",
+    "category": "Poissons",
+    "location": "Frigots bas",
+    "unit": "KG",
+    "unitPrice": 12.5
+  },
+  {
+    "id": "fruits-et-legumes-pomona-et-poi-036",
+    "supplierId": "fruits-et-legumes-pomona-et-poi",
+    "code": "036",
+    "name": "Thon",
+    "category": "Poissons",
+    "location": "Frigots bas",
+    "unit": "KG",
+    "unitPrice": 17
   }
 ]

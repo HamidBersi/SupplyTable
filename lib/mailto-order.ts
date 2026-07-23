@@ -1,27 +1,34 @@
 import type { OrderLine } from "@/types/supply";
+import { sentenceCaseFr } from "@/lib/text";
 
 const MAX_MAILTO_LENGTH = 1800;
 
+export const RESTAURANT_NAME = "LA FELICITA SAS";
+export const RESTAURANT_ADDRESS = "52 rue de Strasbourg, 67117 Furdenheim";
+
+export { sentenceCaseFr } from "@/lib/text";
+
+export function formatOrderEmailLine(line: OrderLine): string {
+  const unit = line.unit.trim().toUpperCase();
+  return `- ${sentenceCaseFr(line.name)} — ${line.qty} ${unit}`;
+}
+
 export function buildOrderEmailBody(params: {
-  restaurantName: string;
-  supplierName: string;
   deliveryLabel: string;
   lines: OrderLine[];
 }): string {
-  const { restaurantName, supplierName, deliveryLabel, lines } = params;
+  const { deliveryLabel, lines } = params;
   const header = [
     `Bonjour,`,
     ``,
-    `Commande pour : ${restaurantName}`,
-    `Fournisseur : ${supplierName}`,
+    `Commande pour : ${RESTAURANT_NAME}`,
+    `Adresse de livraison : ${RESTAURANT_ADDRESS}`,
     `Livraison souhaitée : ${deliveryLabel}`,
     ``,
     `Détail :`,
   ].join("\n");
 
-  const detail = lines
-    .map((l) => `- [${l.code}] ${l.name} — ${l.qty} ${l.unit}`)
-    .join("\n");
+  const detail = lines.map(formatOrderEmailLine).join("\n");
 
   return `${header}\n${detail}\n\nCordialement`;
 }

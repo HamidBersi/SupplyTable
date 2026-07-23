@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { OrderLine, Supplier } from "@/types/supply";
-import { buildMailtoHref, buildOrderEmailBody } from "@/lib/mailto-order";
+import {
+  buildMailtoHref,
+  buildOrderEmailBody,
+  RESTAURANT_NAME,
+} from "@/lib/mailto-order";
+import { sentenceCaseFr } from "@/lib/text";
 import {
   humanDeliveryLabel,
   type DeliveryChoice,
 } from "@/lib/delivery-labels";
 import { saveOrder } from "@/lib/orders-storage";
-
-const RESTAURANT_NAME = "LA FELICITA SAS";
+import { useDialog } from "@/lib/use-dialog";
 
 type Props = {
   supplier: Supplier;
@@ -19,29 +23,12 @@ type Props = {
 };
 
 export function EmailOrderDialog({ supplier, lines, open, onClose }: Props) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const dialogRef = useDialog(open, onClose);
   const [choice, setChoice] = useState<DeliveryChoice>("tomorrow");
   const [customDate, setCustomDate] = useState("");
 
-  useEffect(() => {
-    const el = dialogRef.current;
-    if (!el) return;
-    if (open) el.showModal();
-    else el.close();
-  }, [open]);
-
-  useEffect(() => {
-    const el = dialogRef.current;
-    if (!el) return;
-    const sync = () => onClose();
-    el.addEventListener("close", sync);
-    return () => el.removeEventListener("close", sync);
-  }, [onClose]);
-
   const deliveryLabel = humanDeliveryLabel(choice, customDate);
   const body = buildOrderEmailBody({
-    restaurantName: RESTAURANT_NAME,
-    supplierName: supplier.name,
     deliveryLabel,
     lines,
   });
@@ -80,15 +67,15 @@ export function EmailOrderDialog({ supplier, lines, open, onClose }: Props) {
   return (
     <dialog
       ref={dialogRef}
-      className="w-[min(100%,480px)] rounded-2xl border border-zinc-200 bg-white p-0 text-zinc-900 shadow-xl backdrop:bg-black/40 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
+      className="w-[min(100%,480px)] rounded-2xl border border-border bg-surface p-0 text-foreground shadow-xl backdrop:bg-black/40"
       onClose={onClose}
       onClick={(e) => {
         if (e.target === dialogRef.current) onClose();
       }}
     >
-      <div className="border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
+      <div className="border-b border-border px-5 py-4">
         <h2 className="text-lg font-semibold">Commande par e-mail</h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-muted">
           Quand souhaitez-vous être livré(e) ?
         </p>
       </div>
@@ -109,8 +96,8 @@ export function EmailOrderDialog({ supplier, lines, open, onClose }: Props) {
               onClick={() => setChoice(key)}
               className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                 choice === key
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  ? "bg-accent text-accent-fg shadow-sm"
+                  : "bg-surface-muted text-foreground hover:bg-border/60"
               }`}
             >
               {label}
@@ -120,22 +107,18 @@ export function EmailOrderDialog({ supplier, lines, open, onClose }: Props) {
 
         {choice === "custom" && (
           <label className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              Date
-            </span>
+            <span className="field-label">Date</span>
             <input
               type="date"
               value={customDate}
               onChange={(e) => setCustomDate(e.target.value)}
-              className="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+              className="field-input"
             />
           </label>
         )}
 
-        <div className="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
-          <span className="font-medium text-zinc-600 dark:text-zinc-400">
-            Livraison :{" "}
-          </span>
+        <div className="rounded-lg bg-surface-muted px-3 py-2 text-sm">
+          <span className="font-medium text-muted">Livraison : </span>
           {deliveryLabel}
         </div>
 
@@ -144,16 +127,15 @@ export function EmailOrderDialog({ supplier, lines, open, onClose }: Props) {
             Sélectionnez au moins une quantité dans le tableau.
           </p>
         ) : (
-          <ul className="max-h-40 overflow-auto rounded-lg border border-zinc-200 text-sm dark:border-zinc-700">
+          <ul className="max-h-40 overflow-auto rounded-lg border border-border text-sm">
             {lines.map((l) => (
               <li
                 key={l.productId}
-                className="border-b border-zinc-100 px-3 py-2 last:border-0 dark:border-zinc-800"
+                className="border-b border-border px-3 py-2 last:border-0"
               >
-                <span className="font-mono text-xs text-zinc-500">{l.code}</span>{" "}
-                {l.name}{" "}
+                {sentenceCaseFr(l.name)}{" "}
                 <span className="tabular-nums font-medium">
-                  × {l.qty} {l.unit}
+                  × {l.qty} {l.unit.trim().toUpperCase()}
                 </span>
               </li>
             ))}
@@ -161,12 +143,8 @@ export function EmailOrderDialog({ supplier, lines, open, onClose }: Props) {
         )}
       </div>
 
-      <div className="flex flex-wrap justify-end gap-2 border-t border-zinc-100 px-5 py-4 dark:border-zinc-800">
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-        >
+      <div className="flex flex-wrap justify-end gap-2 border-t border-border px-5 py-4">
+        <button type="button" onClick={onClose} className="btn-ghost">
           Annuler
         </button>
         <button
@@ -175,7 +153,7 @@ export function EmailOrderDialog({ supplier, lines, open, onClose }: Props) {
           onClick={() => {
             void navigator.clipboard.writeText(body).catch(() => {});
           }}
-          className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-600 dark:hover:bg-zinc-900"
+          className="btn-secondary"
         >
           Copier le texte
         </button>
@@ -183,7 +161,7 @@ export function EmailOrderDialog({ supplier, lines, open, onClose }: Props) {
           type="button"
           disabled={lines.length === 0}
           onClick={handlePrimary}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-40"
+          className="btn-primary"
         >
           Ouvrir l’e-mail
         </button>

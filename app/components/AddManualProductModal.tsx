@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { ManualProductInput } from "@/types/supply";
 import { PRODUCT_CATEGORIES } from "@/lib/product-categories";
 import { STORAGE_LOCATIONS } from "@/lib/locations";
 import { ORDER_UNITS } from "@/lib/order-units";
+import { useDialog } from "@/lib/use-dialog";
+import { sentenceCaseFr } from "@/lib/text";
 
 type Props = {
   supplierLabel: string;
@@ -15,14 +17,6 @@ type Props = {
   onAdd: (supplierId: string, input: ManualProductInput) => void;
 };
 
-const emptyForm = (): ManualProductInput => ({
-  name: "",
-  category: PRODUCT_CATEGORIES[0],
-  location: STORAGE_LOCATIONS[1],
-  unit: ORDER_UNITS[0],
-  unitPrice: undefined,
-});
-
 export function AddManualProductModal({
   supplierLabel,
   fixedSupplierId,
@@ -31,36 +25,21 @@ export function AddManualProductModal({
   onClose,
   onAdd,
 }: Props) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const [form, setForm] = useState(emptyForm);
+  const dialogRef = useDialog(open, onClose);
+  const [form, setForm] = useState<ManualProductInput>({
+    name: "",
+    category: PRODUCT_CATEGORIES[0],
+    location: STORAGE_LOCATIONS[1],
+    unit: ORDER_UNITS[0],
+  });
   const [priceText, setPriceText] = useState("");
   const [err, setErr] = useState<string | null>(null);
-  const [pickedSupplierId, setPickedSupplierId] = useState("");
+  const [pickedSupplierId, setPickedSupplierId] = useState(
+    () => supplierOptions?.[0]?.id ?? "",
+  );
 
   const needsSupplierPick =
     !fixedSupplierId && (supplierOptions?.length ?? 0) > 0;
-
-  useEffect(() => {
-    const el = dialogRef.current;
-    if (!el) return;
-    if (open) {
-      setForm(emptyForm());
-      setPriceText("");
-      setErr(null);
-      setPickedSupplierId(supplierOptions?.[0]?.id ?? "");
-      el.showModal();
-    } else {
-      el.close();
-    }
-  }, [open, supplierOptions]);
-
-  useEffect(() => {
-    const el = dialogRef.current;
-    if (!el) return;
-    const sync = () => onClose();
-    el.addEventListener("close", sync);
-    return () => el.removeEventListener("close", sync);
-  }, [onClose]);
 
   const submit = () => {
     const name = form.name.trim();
@@ -97,7 +76,7 @@ export function AddManualProductModal({
   return (
     <dialog
       ref={dialogRef}
-      className="w-[min(100%,28rem)] max-h-[90vh] overflow-y-auto rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 shadow-xl backdrop:bg-zinc-900/50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+      className="w-[min(100%,28rem)] max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-surface p-0 text-foreground shadow-xl backdrop:bg-black/50"
     >
       <form
         method="dialog"
@@ -107,11 +86,9 @@ export function AddManualProductModal({
         }}
         className="flex flex-col"
       >
-        <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+        <div className="border-b border-border px-5 py-4">
           <h2 className="text-lg font-semibold">Produit hors catalogue</h2>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            {supplierLabel}
-          </p>
+          <p className="mt-1 text-sm text-muted">{supplierLabel}</p>
         </div>
 
         <div className="space-y-4 px-5 py-4">
@@ -124,11 +101,11 @@ export function AddManualProductModal({
                   setPickedSupplierId(e.target.value);
                   setErr(null);
                 }}
-                className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900"
+                className="field-select mt-1 w-full"
               >
                 {supplierOptions!.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name}
+                    {sentenceCaseFr(s.name)}
                   </option>
                 ))}
               </select>
@@ -146,7 +123,7 @@ export function AddManualProductModal({
               }}
               placeholder="Ex. : persil plat botte"
               autoFocus
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900"
+              className="field-input mt-1 w-full"
             />
           </label>
 
@@ -157,11 +134,11 @@ export function AddManualProductModal({
               onChange={(e) =>
                 setForm((f) => ({ ...f, category: e.target.value }))
               }
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900"
+              className="field-select mt-1 w-full"
             >
               {PRODUCT_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {sentenceCaseFr(c)}
                 </option>
               ))}
             </select>
@@ -174,11 +151,11 @@ export function AddManualProductModal({
               onChange={(e) =>
                 setForm((f) => ({ ...f, location: e.target.value }))
               }
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900"
+              className="field-select mt-1 w-full"
             >
               {STORAGE_LOCATIONS.map((loc) => (
                 <option key={loc} value={loc}>
-                  {loc}
+                  {sentenceCaseFr(loc)}
                 </option>
               ))}
             </select>
@@ -192,7 +169,7 @@ export function AddManualProductModal({
                 onChange={(e) =>
                   setForm((f) => ({ ...f, unit: e.target.value }))
                 }
-                className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900"
+                className="field-select mt-1 w-full"
               >
                 {ORDER_UNITS.map((u) => (
                   <option key={u} value={u}>
@@ -204,7 +181,7 @@ export function AddManualProductModal({
 
             <label className="block text-sm font-medium">
               Prix unitaire HT{" "}
-              <span className="font-normal text-zinc-500">(optionnel)</span>
+              <span className="font-normal text-muted">(optionnel)</span>
               <input
                 type="text"
                 inputMode="decimal"
@@ -214,7 +191,7 @@ export function AddManualProductModal({
                   setErr(null);
                 }}
                 placeholder="—"
-                className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900"
+                className="field-input mt-1 w-full"
               />
             </label>
           </div>
@@ -224,18 +201,11 @@ export function AddManualProductModal({
           ) : null}
         </div>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-zinc-200 px-5 py-4 sm:flex-row sm:justify-end dark:border-zinc-800">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-600 dark:hover:bg-zinc-900"
-          >
+        <div className="flex flex-col-reverse gap-2 border-t border-border px-5 py-4 sm:flex-row sm:justify-end">
+          <button type="button" onClick={onClose} className="btn-secondary">
             Annuler
           </button>
-          <button
-            type="submit"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
-          >
+          <button type="submit" className="btn-primary">
             Ajouter à la liste
           </button>
         </div>

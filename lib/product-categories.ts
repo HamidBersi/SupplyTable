@@ -1,6 +1,7 @@
 /** Catégories métier du catalogue (ordre d’affichage dans les filtres). */
 export const PRODUCT_CATEGORIES = [
   "Fruits et légumes",
+  "Poissons",
   "Boissons",
   "Alimentaire",
   "Surgelés",

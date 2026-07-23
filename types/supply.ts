@@ -26,6 +26,18 @@ export type ManualProduct = ManualProductInput & {
 
 export type ManualBySupplier = Record<string, ManualProduct[]>;
 
+/** Surcharges locales d’une fiche catalogue (localStorage) — le JSON fournisseur reste intact. */
+export type ProductOverride = {
+  name?: string;
+  category?: string;
+  location?: string;
+  unitPrice?: number;
+  /** Masqué du tableau (pas une suppression définitive). */
+  hidden?: boolean;
+};
+
+export type ProductOverridesMap = Record<string, ProductOverride>;
+
 /** Catégorie métier (voir `lib/product-categories.ts`). Les ajouts manuels utilisent encore une chaîne libre. */
 export type Product = {
   id: string;
