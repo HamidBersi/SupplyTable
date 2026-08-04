@@ -66,7 +66,8 @@ export function LoginForm({ authReady, defaultEmail }: LoginFormProps) {
     setPending(true);
     const form = e.currentTarget;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement)
+      .value;
     try {
       const res = await signIn("credentials", {
         email,
@@ -87,9 +88,9 @@ export function LoginForm({ authReady, defaultEmail }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
       {!authReady ? (
-        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+        <p className="rounded-2xl border border-amber-200/80 bg-amber-50 px-3.5 py-3 text-[13px] leading-relaxed text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
           Authentification incomplète : définissez{" "}
           <code className="text-xs">AUTH_EMAIL</code> et{" "}
           <code className="text-xs">AUTH_PASSWORD_HASH_BASE64</code> dans{" "}
@@ -98,44 +99,54 @@ export function LoginForm({ authReady, defaultEmail }: LoginFormProps) {
         </p>
       ) : null}
       {error === "config" ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="rounded-2xl border border-red-200/80 bg-red-50 px-3.5 py-3 text-[13px] text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
           Connexion impossible : configuration auth invalide.
         </p>
       ) : null}
       {error === "credentials" ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="rounded-2xl border border-red-200/80 bg-red-50 px-3.5 py-3 text-[13px] text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
           Mot de passe ou identifiant incorrect.
         </p>
       ) : null}
-      <div className="space-y-4">
-        <label className="block text-sm font-medium text-foreground">
-          Email
+
+      <div className="overflow-hidden rounded-2xl bg-surface-muted ring-1 ring-border/70">
+        <label className="block px-4 pt-3 pb-2">
+          <span className="text-[11px] font-medium tracking-wide text-muted uppercase">
+            Email
+          </span>
           <input
             name="email"
             type="email"
             autoComplete="email"
             defaultValue={defaultEmail}
             required
-            className="field-input mt-1 w-full"
+            className="mt-1 w-full bg-transparent text-[15px] text-foreground outline-none placeholder:text-muted/60"
+            placeholder="vous@exemple.com"
           />
         </label>
-        <label className="block text-sm font-medium text-foreground">
-          Mot de passe
+        <div className="mx-4 h-px bg-border/80" />
+        <label className="block px-4 pt-3 pb-3">
+          <span className="text-[11px] font-medium tracking-wide text-muted uppercase">
+            Mot de passe
+          </span>
           <div className="relative mt-1">
             <input
               name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               required
-              className="field-input w-full py-2 pr-11 pl-3"
+              className="w-full bg-transparent py-0.5 pr-10 text-[15px] text-foreground outline-none placeholder:text-muted/60"
+              placeholder="••••••••"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-3 text-muted transition hover:text-foreground"
+              className="absolute inset-y-0 right-0 flex items-center px-1 text-muted transition hover:text-foreground"
               aria-pressed={showPassword}
               aria-label={
-                showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"
+                showPassword
+                  ? "Masquer le mot de passe"
+                  : "Afficher le mot de passe"
               }
             >
               {showPassword ? (
@@ -147,10 +158,11 @@ export function LoginForm({ authReady, defaultEmail }: LoginFormProps) {
           </div>
         </label>
       </div>
+
       <button
         type="submit"
         disabled={pending}
-        className="btn-primary w-full py-2.5 disabled:opacity-60"
+        className="w-full rounded-2xl bg-accent px-4 py-3.5 text-[15px] font-semibold text-accent-fg shadow-sm transition hover:bg-accent-hover active:scale-[0.98] disabled:opacity-60"
       >
         {pending ? "Connexion…" : "Se connecter"}
       </button>

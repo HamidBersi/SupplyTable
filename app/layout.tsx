@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Supply Table — Commandes fournisseurs",
+  title: "Felicita commandes — Catalogue fournisseurs",
   description:
-    "Catalogue et commandes pour restaurant : filtres, e-mail et historique local.",
+    "Catalogue et commandes fournisseurs pour La Félicità : filtres, e-mail et historique.",
 };
 
 export default async function RootLayout({

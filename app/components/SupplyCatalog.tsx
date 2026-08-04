@@ -333,17 +333,8 @@ export function SupplyCatalog({ suppliers, products }: Props) {
 
   return (
     <div className="pb-28">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <div className="mb-8 text-center md:text-left">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Catalogue des Produits
-          </h1>
-          <p className="mt-2 hidden max-w-2xl text-sm text-muted md:block">
-            Filtrez les produits par fournisseur, catégorie ou emplacement. Vous pouvez également rechercher un produit par nom, code ou catégorie.
-          </p>
-        </div>
-
-        <div className="mb-6">
+      <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6">
+        <div className="mb-5">
           <FilterBar
             searchValue={searchQuery}
             supplierValue={supplierId}
